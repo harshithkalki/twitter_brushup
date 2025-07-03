@@ -7,24 +7,36 @@ generator client {
 }
 
 datasource db {
-    provider = "mysql"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
 
     // If you have enabled foreign key constraints for your database, remove this line.
     relationMode = "prisma"
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
+model Tweet {
+    id        String   @id @default(uuid())
+    userid    String
+    content   String
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+    likes Like[]
 
-    @@index([name])
-    @@index([createdById])
+    user User @relation(fields: [userid], references: [id], onDelete: Cascade)
+
+    @@index([userid])
+}
+
+model Like {
+    tweetId String
+    userId  String
+
+    tweet Tweet @relation(fields: [tweetId], references: [id])
+    user  User  @relation(fields: [userId], references: [id])
+
+    @@id([tweetId, userId])
+    @@index([userId])
+    @@index([tweetId])
 }
 
 // Necessary for Next auth
@@ -62,10 +74,15 @@ model User {
     name          String?
     email         String?   @unique
     emailVerified DateTime?
+    password      String?
+    createdAt     DateTime  @default(now())
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+    tweets        Tweet[]
+    like          Like[]
+    followers     User[]    @relation(name: "following")
+    follows       User[]    @relation(name: "following")
 }
 
 model VerificationToken {
