@@ -4,26 +4,38 @@ import type { NextAuthConfig } from "next-auth";
 import {prisma} from "~/lib/prisma";
 import {compare} from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
+type CredentialsType = {
+    email: string;
+    password: string;
+  };
 
 const authcopnfig: NextAuthConfig = {
   providers: [
     CredentialsProvider({
         name: "Credentials",
         credentials: {
-          email: { label: "Email", type: "text" },
-          password: { label: "Password", type: "password" },
-        },
-        async authorize(credentials: { email?: string; password?: string }) {
-          if (!credentials?.email || !credentials?.password) {
+            email: { label: "email", type: "string", placeholder: "jsmith" },
+            password: { label: "Password", type: "password" }
+          },
+        async authorize(
+            credentials,
+            req
+          ) {
+            const creds = credentials as CredentialsType;
+          if (!creds?.email || !creds?.password) {
             throw new Error("Missing email or password");
           }
       
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email }, 
+            where: { email: creds.email }, 
           });
       
           if (!user) throw new Error("No user found");
-          const isValid = await compare(credentials.password, user.password);
+          if (!user || typeof user.password !== "string") {
+            throw new Error("User not found or password issue");
+          }
+
+          const isValid = await compare(creds.password, user.password as string);
           if (!isValid) throw new Error("Invalid password");
       
           return {
