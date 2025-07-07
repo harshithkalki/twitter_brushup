@@ -4,6 +4,8 @@ import type { NextAuthConfig } from "next-auth";
 import {prisma} from "~/lib/prisma";
 import {compare} from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+
 type CredentialsType = {
     email: string;
     password: string;
@@ -11,6 +13,12 @@ type CredentialsType = {
 
 const authcopnfig: NextAuthConfig = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+
+
     CredentialsProvider({
         name: "Credentials",
         credentials: {
@@ -44,11 +52,18 @@ const authcopnfig: NextAuthConfig = {
             email: user.email,
           };
         },
-      })
+      }),
       
   ],
+  session: {
+    strategy: "database",
+  }
 
 }
 export const { GET, POST } = handlers;
 
+
+function googleProvider(arg0: { clientId: string; clientSecret: string; }) {
+    throw new Error("Function not implemented.");
+}
     
