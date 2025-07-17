@@ -1,4 +1,3 @@
-import { handlers } from "~/server/auth";
 import NextAuth from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 import {prisma} from "~/lib/prisma";
@@ -11,7 +10,7 @@ type CredentialsType = {
     password: string;
   };
 
-const authcopnfig: NextAuthConfig = {
+export const authconfig: NextAuthConfig = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -43,7 +42,7 @@ const authcopnfig: NextAuthConfig = {
             throw new Error("User not found or password issue");
           }
 
-          const isValid = await compare(creds.password, user.password as string);
+          const isValid = await compare(creds.password, user.password );
           if (!isValid) throw new Error("Invalid password");
       
           return {
@@ -60,10 +59,9 @@ const authcopnfig: NextAuthConfig = {
   }
 
 }
-export const { GET, POST } = handlers;
 
+const handlers = NextAuth(authconfig);
 
-function googleProvider(arg0: { clientId: string; clientSecret: string; }) {
-    throw new Error("Function not implemented.");
-}
+export { handlers as GET, handlers as POST };
+
     
